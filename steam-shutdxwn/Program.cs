@@ -17,6 +17,8 @@ namespace steam_shutdxwn
             bool isSteamRunning = Steam.IsSteamRunning();
             bool steamPathExists = Directory.Exists(steamPath);
 
+            CommandHandler.GetCommands();
+
             Task downloadMonitoring = new Task(() => Steam.FileWatcher(steamPath));
 
             Banner.ShowBanner();
