@@ -6,7 +6,13 @@
     <RootNamespace>steam_shutdxwn</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <ApplicationIcon>Source\icon.ico</ApplicationIcon>
+    <AssemblyName>Steam Shutdxwn</AssemblyName>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="Source\icon.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />

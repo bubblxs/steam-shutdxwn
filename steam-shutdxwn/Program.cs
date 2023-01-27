@@ -9,7 +9,7 @@ namespace steam_shutdxwn
     {
         static void Main(string[] args)
         {
-            Console.Title = "steam-shutdxwn";
+            Console.Title = "steam shutdxwn";
 
             Steam steam = new Steam();
             RegistryKey registerPath = Registry.CurrentUser.OpenSubKey("Software\\Valve\\Steam\\");
@@ -68,14 +68,12 @@ namespace steam_shutdxwn
 
                             downloadsQueued = steam.GetDownloadQueue(steamPath);
 
-                            if (downloadsQueued == null)
-                            {
-                                Console.WriteLine("Downloads in queue were not found. Trying again in 2s.");
-                            }
-                            else
+                            if (downloadsQueued != null)
                             {
                                 break;
                             }
+
+                            Console.WriteLine("Downloads in queue were not found. Trying again in 2s.");
                         }
 
                         break;
