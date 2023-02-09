@@ -11,11 +11,20 @@ namespace steam_shutdxwn
         {
             Console.Title = "steam shutdxwn";
 
+            Banner.ShowBanner();
+
             Steam steam = new Steam();
             RegistryKey registerPath = Registry.CurrentUser.OpenSubKey("Software\\Valve\\Steam\\");
             FileSystemWatcher watcher = new FileSystemWatcher();
             
             string steamPath = $"{registerPath.GetValue("SteamPath")}/steamapps/";
+
+            if (!Directory.Exists(steamPath))
+            {
+                Console.WriteLine("Steam is not installed!.");
+                Console.ReadKey();
+                return;
+            }
 
             watcher.Filter = "*.acf";
             watcher.Path = steamPath;
@@ -26,25 +35,9 @@ namespace steam_shutdxwn
 
             steam.SetSteamPath(steamPath);
 
-            Banner.ShowBanner();
-
-            if (registerPath == null)
-            {
-                Console.WriteLine("Steam not installed!");
-                Console.ReadKey();
-                return;
-            }
-
-            if (!Directory.Exists(steamPath))
-            {
-                Console.WriteLine("Steam not installed! ('steamapps' folder not found)");
-                Console.ReadKey();
-                return;
-            }
-
             if (!steam.IsSteamRunning())
             {
-                Console.WriteLine("Steam is not runnnig!. Open Steam and try it again");
+                Console.WriteLine("Steam is not runnnig!. Open Steam and then try it again.");
                 Console.ReadKey();
                 return;
             }
@@ -53,8 +46,8 @@ namespace steam_shutdxwn
 
             if (downloadsQueued == null)
             {
-                Console.WriteLine("No downloads were found");
-                Console.Write("Would you like to try again? [y/n]: ");
+                Console.WriteLine("Downloads not found.");
+                Console.Write("Would you like to try again? (y): ");
 
                 if (Console.ReadKey().Key == ConsoleKey.Y)
                 {
