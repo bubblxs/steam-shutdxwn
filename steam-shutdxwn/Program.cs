@@ -14,10 +14,10 @@ namespace steam_shutdxwn
             Banner.ShowBanner();
 
             Steam steam = new Steam();
-            RegistryKey registerPath = Registry.CurrentUser.OpenSubKey("Software\\Valve\\Steam\\");
+            RegistryKey registryPath = Registry.CurrentUser.OpenSubKey("Software\\Valve\\Steam\\");
             FileSystemWatcher watcher = new FileSystemWatcher();
             
-            string steamPath = $"{registerPath.GetValue("SteamPath")}/steamapps/";
+            string steamPath = $"{registryPath.GetValue("SteamPath")}/steamapps/";
 
             if (!Directory.Exists(steamPath))
             {
@@ -37,7 +37,7 @@ namespace steam_shutdxwn
 
             if (!steam.IsSteamRunning())
             {
-                Console.WriteLine("Steam is not runnnig!. Open Steam and then try it again.");
+                Console.WriteLine("Steam is not runnnig!. Open Steam and then try again.");
                 Console.ReadKey();
                 return;
             }
@@ -78,9 +78,15 @@ namespace steam_shutdxwn
                     return;
                 }
             }
+            
+            if (downloadsQueued == null)
+            {
+                Console.WriteLine("\n...");
+                return;
+            }
 
             Console.WriteLine($"\nDownload(s) found.");
-            Console.WriteLine($"\nSteam Shutdown is now running.Your computer will shutdown when all games have been downloaded.\n");
+            Console.WriteLine($"\nSteam Shutdown is now running. Your computer will shutdown when all games have been downloaded.\n");
 
             while (true) { Console.ReadKey(); };
         }
