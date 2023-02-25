@@ -6,5 +6,10 @@
         public string name { get; set; }
         public string stateFlag { get; set; }
         public string fileName { get; set; }
+
+        public override string ToString()
+        {
+            return appid + " - " + name + " - " + stateFlag + " - " + fileName;
+        }
     }
 }

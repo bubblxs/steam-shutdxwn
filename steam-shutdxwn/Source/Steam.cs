@@ -8,22 +8,22 @@ namespace steam_shutdxwn.Source
     public class Steam
     {
         public static bool isAlreadyCalled = false;
-        public static string steamPath = String.Empty;
+        public static List<string> steamPaths = new List<string>();
 
         public bool IsSteamRunning()
         {
            return Process.GetProcessesByName("Steam").Length > 0;
         }
 
-        public void SetSteamPath(string sp)
+        public void SetSteamPath(List<string> sp)
         {
-            steamPath = sp;
+            steamPaths = sp;
         }
 
         public void FilesWatcher(object sender, FileSystemEventArgs e)
         {
             Thread.Sleep(2000);
-            List<GameInfo> downloadQueue = GetDownloadQueue(steamPath);
+            List<GameInfo> downloadQueue = GetDownloadQueue(steamPaths);
 
             if (downloadQueue == null && !isAlreadyCalled)
             {
@@ -65,8 +65,21 @@ namespace steam_shutdxwn.Source
                 };
 
                 downloadQueued.Add(game);
+                Console.WriteLine("Game info status: " + game.ToString());
             }
             
+            return downloadQueued.Count > 0 ? downloadQueued : null;
+        }
+
+        public List<GameInfo> GetDownloadQueue(List<string> steamAppPaths)
+        {
+            List<GameInfo> downloadQueued = new List<GameInfo>();
+
+            foreach (var path in steamAppPaths)
+            {
+                List<GameInfo> downloadQueuedAux = GetDownloadQueue(path);
+                if (downloadQueuedAux != null) downloadQueued.AddRange(downloadQueuedAux);
+            }
             return downloadQueued.Count > 0 ? downloadQueued : null;
         }
 

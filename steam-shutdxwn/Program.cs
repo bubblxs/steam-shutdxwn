@@ -2,6 +2,7 @@
 using steam_shutdxwn.Source;
 using steam_shutdxwn.Source.Banner;
 using steam_shutdxwn.Source.Classes;
+using steam_shutdxwn.Source.Helpers;
 
 namespace steam_shutdxwn
 {
@@ -14,11 +15,11 @@ namespace steam_shutdxwn
             Banner.ShowBanner();
 
             Steam steam = new Steam();
-            RegistryKey registryPath = Registry.CurrentUser.OpenSubKey("Software\\Valve\\Steam\\");
-            FileSystemWatcher watcher = new FileSystemWatcher();
-            
-            string steamPath = $"{registryPath.GetValue("SteamPath")}/steamapps/";
+            List<FileSystemWatcher> watcherList = new List<FileSystemWatcher>();
+            PathSearcher pathSearcher = new PathSearcher();
+            List<string> steamappPaths = new List<string>();
 
+            var steamPath = pathSearcher.getMainSteamPath();
             if (!Directory.Exists(steamPath))
             {
                 Console.WriteLine("Steam is not installed!.");
@@ -26,14 +27,21 @@ namespace steam_shutdxwn
                 return;
             }
 
-            watcher.Filter = "*.acf";
-            watcher.Path = steamPath;
-            watcher.NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastAccess | NotifyFilters.LastWrite;
-            watcher.EnableRaisingEvents = true;
-            watcher.IncludeSubdirectories = true;
-            watcher.Deleted += steam.FilesWatcher;
+            steam.SetSteamPath(steamappPaths);
+            steamappPaths.AddRange(pathSearcher.getAllSteamappPaths());
 
-            steam.SetSteamPath(steamPath);
+            foreach (var path in steamappPaths)
+            {
+                FileSystemWatcher watcher = new FileSystemWatcher();
+                watcher.Filter = "*.acf";
+                watcher.Path = path;
+                watcher.NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastAccess | NotifyFilters.LastWrite;
+                watcher.EnableRaisingEvents = true;
+                watcher.IncludeSubdirectories = true;
+                watcher.Deleted += steam.FilesWatcher;
+                watcherList.Add(watcher);
+            }
+
 
             if (!steam.IsSteamRunning())
             {
@@ -42,7 +50,7 @@ namespace steam_shutdxwn
                 return;
             }
 
-            List<GameInfo> downloadsQueued = steam.GetDownloadQueue(steamPath);
+            List<GameInfo> downloadsQueued = steam.GetDownloadQueue(steamappPaths);
 
             if (downloadsQueued == null)
             {
@@ -59,7 +67,7 @@ namespace steam_shutdxwn
                         {
                             Thread.Sleep(2000);
 
-                            downloadsQueued = steam.GetDownloadQueue(steamPath);
+                            downloadsQueued = steam.GetDownloadQueue(steamappPaths);
 
                             if (downloadsQueued != null)
                             {

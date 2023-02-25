@@ -18,17 +18,7 @@ namespace steam_shutdxwn.Source.Banner
             stringBuilder.AppendLine("|___/\\__\\___|\\__,_|_| |_| |_| |___/_| |_|\\__,_|\\__\\__,_|\\___/ \\_/\\_/ |_| |_|       ");
             stringBuilder.AppendLine("                                                                                            ");
             
-            /*
-            string filePath = $"{AppDomain.CurrentDomain.BaseDirectory}/Source/Banner/banner.txt";
-            string[] file = File.ReadAllLines(filePath);
-
-            for (int i = 0, l = file.Length; i < l; i++)
-            {
-                stringBuilder.Append($"{file[i]}\n");
-            }
-            */
-            
             Console.WriteLine(stringBuilder.ToString());
-        }
+        } 
     }
 }
