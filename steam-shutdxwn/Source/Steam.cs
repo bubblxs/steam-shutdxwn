@@ -1,94 +1,234 @@
-﻿using Newtonsoft.Json;
-using steam_shutdxwn.Source.Classes;
+﻿using Microsoft.Win32;
+using System.Text.Json;
 using System.Diagnostics;
-using steam_shutdxwn.Source.Helpers;
+using steam_shutdxwn.Source.Classes;
 
 namespace steam_shutdxwn.Source
 {
     public class Steam
     {
-        public static bool isAlreadyCalled = false;
-        public static List<string> steamPaths = new List<string>();
+        private bool _isShutingDown = false;
+        private List<Game>? _downloadList = new List<Game>();
+        private List<string> _steamFoldersPath = new List<string>();
+        private string _steamMainPath = string.Empty;
 
-        public bool IsSteamRunning()
+        public void Init()
         {
-           return Process.GetProcessesByName("Steam").Length > 0;
-        }
+            Console.Title = "steam shutdxwn";
 
-        public void SetSteamPath(List<string> sp)
-        {
-            steamPaths = sp;
-        }
+            Banner.Show();
 
-        public void FilesWatcher(object sender, FileSystemEventArgs e)
-        {
-            Thread.Sleep(2000);
-            List<GameInfo> downloadQueue = GetDownloadQueue(steamPaths);
-
-            if (downloadQueue == null && !isAlreadyCalled)
+            if (!IsRunning())
             {
-                isAlreadyCalled = true;
-                Shutdown();
+                Console.WriteLine("Steam is not running. Close the app and try again.");
+                return;
             }
+
+            _steamMainPath = GetSteamMainPath();
+            _steamFoldersPath = GetAllSteamPaths();
+            _downloadList = GetDownloads(_steamFoldersPath);
+
+            List<FileSystemWatcher> watchList = new List<FileSystemWatcher>();
+
+            foreach (string path in _steamFoldersPath)
+            {
+                FileSystemWatcher watcher = new FileSystemWatcher();
+                watcher.Filter = "*.acf";
+                watcher.Path = path;
+                watcher.NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastAccess | NotifyFilters.LastWrite;
+                watcher.EnableRaisingEvents = true;
+                watcher.IncludeSubdirectories = true;
+                watcher.Deleted += MonitoringAcfFiles;
+                watchList.Add(watcher);
+            }
+
+            if (_downloadList is null)
+            {
+                Console.WriteLine("Downloads not found");
+                Console.Write("Would you like to try again? (y): ");
+
+                if (Console.ReadKey().Key == ConsoleKey.Y)
+                {
+                    Console.WriteLine("\n\nPress 'ESC' to cancel.\n");
+
+                    do
+                    {
+                        while (!Console.KeyAvailable)
+                        {
+                            _downloadList = GetDownloads(_steamFoldersPath);
+
+                            if (_downloadList is not null) break;
+
+                            Console.WriteLine("Downloads not found. Trying again in 2s.");
+
+                            Thread.Sleep(2000);
+                        }
+
+                        break;
+
+                    } while (Console.ReadKey(true).Key != ConsoleKey.Escape);
+                }
+                else
+                {
+                    Console.WriteLine("\nExiting...");
+                    Environment.Exit(0);
+                }
+
+                if (_downloadList is null)
+                {
+                    Console.WriteLine("\nExiting...");
+                    Environment.Exit(0);
+                }
+            }
+
+            Console.WriteLine("Steam Shutdxwn is now running");
+
+            while (true) Console.ReadKey();
         }
 
-        public List<GameInfo> GetDownloadQueue(string steamPath)
+        private static string GetSteamMainPath()
         {
-            List<GameInfo> downloadQueued = new List<GameInfo>();
+            RegistryKey? registryKey = Registry.CurrentUser.OpenSubKey("Software\\Valve\\Steam\\");
+
+            if (registryKey is null)
+            {
+                Console.WriteLine("Steam is not installed");
+                Environment.Exit(0);
+            }
+
+            string? steamPath = $"{registryKey.GetValue("SteamPath")}/steamapps/";
+
+            if (!Directory.Exists(steamPath) || steamPath is null)
+            {
+                Console.WriteLine("'steamapps' folder was not found");
+                Environment.Exit(0);
+            }
+
+            return steamPath;
+        }
+
+        //Thx to @Alves24
+        private static List<string> GetAllSteamPaths()
+        {
+            DriveInfo[] allDrives = DriveInfo.GetDrives();
+            List<string> paths = new List<string>();
+
+            foreach (DriveInfo drive in allDrives)
+            {
+                List<string> possiblePaths = new List<string>
+                {
+                    // Steam would create the first path below in a drive that isnt the main one
+                    Path.Combine(drive.RootDirectory.FullName, "SteamLibrary", "Steamapps"),
+                    // but i think that this one is possible too..
+                    Path.Combine(drive.RootDirectory.FullName, "Steamapps")
+                    // maybe there is others possibilities, but those would be the common ones
+                };
+
+                foreach (string path in possiblePaths)
+                {
+                    if (Directory.Exists(path))
+                    {
+                        paths.Add(path);
+                    }
+                }
+            }
+
+            string mainPath = GetSteamMainPath();
+            string? match = paths.FirstOrDefault(stringToCheck => stringToCheck.Contains(mainPath));
+
+            if (match is null)
+            {
+                paths.Add(Path.GetFullPath(mainPath));
+            }
+
+            return paths;
+        }
+
+        private List<Game>? GetDownloads(List<string> steamPaths)
+        {
+            List<Game> games = new List<Game>();
+
+            foreach (string path in steamPaths)
+            {
+                List<Game>? game = GetDownloads(path);
+
+                if (game is not null)
+                {
+                    games.AddRange(game);
+                }
+            }
+
+            return games.Count > 0 ? games : null;
+        }
+
+        private List<Game>? GetDownloads(string steamPath)
+        {
+            List<Game> games = new List<Game>();
             string[] files = Directory.GetFiles(steamPath, "*.acf");
+            string[] downloadState = { "4", "68", "1090", "518" }; // { DownloadState.complete, DownloadState.ignore2, DownloadState.ignore, DownloadState.notScheduled }
 
-            if (files == null)
+            if (files is null) return null;
+
+            foreach (string file in files)
             {
-                return null;
-            }
+                string? content = Acf.ToJson(file);
 
-            for (int i = 0, l = files.Length; i < l; i++)
-            {
-                string content  = AcfToJson.Convert(files[i]);
-                Acf contentJson = JsonConvert.DeserializeObject<Acf>(content);
-                int stateFlag   = int.Parse(contentJson.StateFlags);
+                if (content is null)
+                {
+                    Console.WriteLine($"Something went wrong converting the file '{file}'. We're skiping it for now.");
+                    continue;
+                }
 
-                if (stateFlag == (int)DownloadState.complete || 
-                    stateFlag == (int)DownloadState.ignore2  ||
-                    stateFlag == (int)DownloadState.ignore   ||
-                    stateFlag > 1500)
+                Acf? acf = JsonSerializer.Deserialize<Acf>(content);
+                Game game = new Game()
+                {
+                    Name = acf.name,
+                    AppId = acf.appid,
+                    StateFlag = acf.StateFlags,
+                    FileName = file
+                };
+
+                int stateFlag;
+                int.TryParse(acf.StateFlags, out stateFlag);
+
+                if (downloadState.Contains(acf.StateFlags) || stateFlag > 1500)
                 {
                     continue;
                 }
 
-                GameInfo game = new GameInfo()
-                {
-                    name = contentJson.name,
-                    appid = contentJson.appid,
-                    stateFlag = contentJson.StateFlags,
-                    fileName = files[i]
-                };
+                games.Add(game);
 
-                downloadQueued.Add(game);
-                Console.WriteLine("Game info status: " + game.ToString());
+                Console.WriteLine(game.ToString());
             }
-            
-            return downloadQueued.Count > 0 ? downloadQueued : null;
+
+            return games.Count > 0 ? games : null;
         }
 
-        public List<GameInfo> GetDownloadQueue(List<string> steamAppPaths)
+        private bool IsRunning()
         {
-            List<GameInfo> downloadQueued = new List<GameInfo>();
+            return Process.GetProcessesByName("Steam").Count() > 0;
+        }
 
-            foreach (var path in steamAppPaths)
+        private void MonitoringAcfFiles(object sender, FileSystemEventArgs e)
+        {
+            Thread.Sleep(2000);
+
+            _downloadList = GetDownloads(_steamFoldersPath);
+
+            if (_downloadList is null && !_isShutingDown)
             {
-                List<GameInfo> downloadQueuedAux = GetDownloadQueue(path);
-                if (downloadQueuedAux != null) downloadQueued.AddRange(downloadQueuedAux);
+                _isShutingDown = true;
+                Shutdown();
             }
-            return downloadQueued.Count > 0 ? downloadQueued : null;
         }
 
-        public void Shutdown()
+        private void Shutdown()
         {
+            Console.Title = "bye bye";
             Process.Start("cmd.exe", "/C shutdown /s");
             Console.Clear();
-            Banner.Banner.ShowBanner();
-            Console.WriteLine("\nbye bye\n");
+            Banner.Show();
+            Console.WriteLine("Shuting down...");
         }
     }
 }
