@@ -165,7 +165,7 @@ namespace steam_shutdxwn.Source
         {
             List<Game> games = new List<Game>();
             string[] files = Directory.GetFiles(steamPath, "*.acf");
-            string[] downloadState = { "4", "68", "1090", "518" }; // { DownloadState.complete, DownloadState.ignore2, DownloadState.ignore, DownloadState.notScheduled }
+            string[] downloadState = { "4", "68", "1090", "518", "514" }; // { DownloadState.complete, DownloadState.ignore2, DownloadState.ignore, DownloadState.notScheduled }
 
             if (files is null) return null;
 
