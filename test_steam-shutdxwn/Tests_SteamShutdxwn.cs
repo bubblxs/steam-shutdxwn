@@ -27,8 +27,8 @@ namespace test_steam_shutdxwn
                     }
                     else
                     {
-                        Game? game = JsonSerializer.Deserialize<Game>(content);
-                        Assert.IsNotNull(game, $"$File: {f}\n.Its content: {content}");
+                        Acf? acf = JsonSerializer.Deserialize<Acf>(content);
+                        Assert.IsNotNull(acf, $"$File: {f}\n.Its content: {content}");
                     }
                 }
             }
