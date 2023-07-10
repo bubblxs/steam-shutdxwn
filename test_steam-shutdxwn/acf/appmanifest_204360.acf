@@ -1,0 +1,43 @@
+"AppState"
+{
+	"appid"		"204360"
+	"universe"		"1"
+	"LauncherPath"		"C:\\Program Files (x86)\\Steam\\steam.exe"
+	"name"		"Castle Crashers"
+	"StateFlags"		"4"
+	"installdir"		"CastleCrashers"
+	"LastUpdated"		"1688935486"
+	"SizeOnDisk"		"207562508"
+	"StagingSize"		"0"
+	"buildid"		"4355158"
+	"LastOwner"		"0"
+	"UpdateResult"		"0"
+	"BytesToDownload"		"178612928"
+	"BytesDownloaded"		"178612928"
+	"BytesToStage"		"207562508"
+	"BytesStaged"		"207562508"
+	"TargetBuildID"		"4355158"
+	"AutoUpdateBehavior"		"0"
+	"AllowOtherDownloadsWhileRunning"		"0"
+	"ScheduledAutoUpdate"		"0"
+	"InstalledDepots"
+	{
+		"204361"
+		{
+			"manifest"		"1662096597864129185"
+			"size"		"207562508"
+		}
+	}
+	"InstallScripts"
+	{
+		"204361"		"installscript.vdf"
+	}
+	"UserConfig"
+	{
+		"language"		"english"
+	}
+	"MountedConfig"
+	{
+		"language"		"english"
+	}
+}

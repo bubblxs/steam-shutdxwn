@@ -1,0 +1,77 @@
+"AppState"
+{
+	"appid"		"209170"
+	"universe"		"1"
+	"LauncherPath"		"C:\\Program Files (x86)\\Steam\\steam.exe"
+	"name"		"Call of Duty: Ghosts - Multiplayer"
+	"StateFlags"		"4"
+	"installdir"		"Call of Duty Ghosts"
+	"LastUpdated"		"1688937634"
+	"SizeOnDisk"		"30781820104"
+	"StagingSize"		"0"
+	"buildid"		"3095968"
+	"LastOwner"		"0"
+	"UpdateResult"		"0"
+	"BytesToDownload"		"30560153600"
+	"BytesDownloaded"		"30560153600"
+	"BytesToStage"		"30948944321"
+	"BytesStaged"		"30948944321"
+	"TargetBuildID"		"3095968"
+	"AutoUpdateBehavior"		"0"
+	"AllowOtherDownloadsWhileRunning"		"0"
+	"ScheduledAutoUpdate"		"0"
+	"InstalledDepots"
+	{
+		"209171"
+		{
+			"manifest"		"5223938320976514402"
+			"size"		"39918559"
+		}
+		"209164"
+		{
+			"manifest"		"8983067619469855177"
+			"size"		"3816518280"
+		}
+		"209162"
+		{
+			"manifest"		"7362622108341025052"
+			"size"		"22609456527"
+		}
+		"209172"
+		{
+			"manifest"		"1215466573079763620"
+			"size"		"1207516561"
+		}
+		"259250"
+		{
+			"manifest"		"858753029120825623"
+			"size"		"2920640127"
+			"dlcappid"		"259250"
+		}
+		"277330"
+		{
+			"manifest"		"8421162176958831306"
+			"size"		"187770050"
+		}
+	}
+	"InstallScripts"
+	{
+		"209171"		"installscript_209170.vdf"
+	}
+	"SharedDepots"
+	{
+		"228984"		"228980"
+		"228990"		"228980"
+		"229002"		"228980"
+	}
+	"UserConfig"
+	{
+		"BetaKey"		"public"
+		"language"		"english"
+	}
+	"MountedConfig"
+	{
+		"BetaKey"		"public"
+		"language"		"english"
+	}
+}
