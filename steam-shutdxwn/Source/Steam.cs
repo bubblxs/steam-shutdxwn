@@ -7,7 +7,7 @@ namespace steam_shutdxwn.Source
 {
     public class Steam
     {
-        private bool _isShutingDown = false;
+        private bool _isShuttingDown = false;
         private List<Game>? _downloadList = new List<Game>();
         private List<string> _steamFoldersPath = new List<string>();
         private string _steamMainPath = string.Empty;
@@ -28,7 +28,7 @@ namespace steam_shutdxwn.Source
             _steamFoldersPath = GetAllSteamPaths();
             _downloadList = GetDownloads(_steamFoldersPath);
 
-            List<FileSystemWatcher> watchList = new List<FileSystemWatcher>();
+            List<FileSystemWatcher> watchlist = new List<FileSystemWatcher>();
 
             foreach (string path in _steamFoldersPath)
             {
@@ -39,7 +39,7 @@ namespace steam_shutdxwn.Source
                 watcher.EnableRaisingEvents = true;
                 watcher.IncludeSubdirectories = true;
                 watcher.Deleted += MonitoringAcfFiles;
-                watchList.Add(watcher);
+                watchlist.Add(watcher);
             }
 
             if (_downloadList is null)
@@ -81,7 +81,9 @@ namespace steam_shutdxwn.Source
                 }
             }
 
-            Console.WriteLine("Steam Shutdxwn is now running");
+            Console.Clear();
+            Banner.Show();
+            Console.WriteLine("steam shutdxwn is now running");
 
             while (true) Console.ReadKey();
         }
@@ -165,7 +167,7 @@ namespace steam_shutdxwn.Source
         {
             List<Game> games = new List<Game>();
             string[] files = Directory.GetFiles(steamPath, "*.acf");
-            string[] downloadState = { "4", "68", "1090", "518", "514" }; // { DownloadState.complete, DownloadState.ignore2, DownloadState.ignore, DownloadState.notScheduled }
+            string[] downloadState = { "4", "68", "1090", "514", "518" }; // { DownloadState.complete, DownloadState.ignore2, DownloadState.ignore, DownloadState.notScheduled }
 
             if (files is null) return null;
 
@@ -215,9 +217,9 @@ namespace steam_shutdxwn.Source
 
             _downloadList = GetDownloads(_steamFoldersPath);
 
-            if (_downloadList is null && !_isShutingDown)
+            if (_downloadList is null && !_isShuttingDown)
             {
-                _isShutingDown = true;
+                _isShuttingDown = true;
                 Shutdown();
             }
         }
@@ -228,7 +230,7 @@ namespace steam_shutdxwn.Source
             Process.Start("cmd.exe", "/C shutdown /s");
             Console.Clear();
             Banner.Show();
-            Console.WriteLine("Shuting down...");
+            Console.WriteLine("shutting down...");
         }
     }
 }
