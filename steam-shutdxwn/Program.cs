@@ -1,4 +1,4 @@
-﻿using steam_shutdxwn.Source;
+﻿using steam_shutdxwn.Source.Classes;
 
 namespace steam_shutdxwn
 {

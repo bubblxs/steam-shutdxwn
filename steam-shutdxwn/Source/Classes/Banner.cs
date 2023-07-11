@@ -23,11 +23,10 @@ namespace steam_shutdxwn.Source.Classes
             {
                 try
                 {
-                    int maxBannerSize = 20;
                     using (StreamReader reader = new StreamReader(fullPath))
                     {
                         string? line = string.Empty;
-                        for (int i = 0; (line = reader.ReadLine()) != null && i < maxBannerSize; i++)
+                        for (int i = 0, maxBannerSize = 20; (line = reader.ReadLine()) != null && i < maxBannerSize; i++)
                         {
                             _banner.AppendLine(line);
                         }
@@ -35,6 +34,7 @@ namespace steam_shutdxwn.Source.Classes
                 }
                 catch (Exception ex)
                 {
+                    _banner.Clear();
                     _banner.Append("steam shutdxwn");
                 }
             }

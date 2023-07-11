@@ -1,9 +1,8 @@
 ﻿using Microsoft.Win32;
 using System.Text.Json;
 using System.Diagnostics;
-using steam_shutdxwn.Source.Classes;
 
-namespace steam_shutdxwn.Source
+namespace steam_shutdxwn.Source.Classes
 {
     public class Steam
     {
@@ -21,6 +20,7 @@ namespace steam_shutdxwn.Source
             if (!IsRunning())
             {
                 Console.WriteLine("Steam is not running. Close the app and try again.");
+                Console.ReadKey();
                 return;
             }
 
@@ -68,11 +68,6 @@ namespace steam_shutdxwn.Source
 
                     } while (Console.ReadKey(true).Key != ConsoleKey.Escape);
                 }
-                else
-                {
-                    Console.WriteLine("\nExiting...");
-                    Environment.Exit(0);
-                }
 
                 if (_downloadList is null)
                 {
@@ -95,6 +90,7 @@ namespace steam_shutdxwn.Source
             if (registryKey is null)
             {
                 Console.WriteLine("Steam is not installed");
+                Console.ReadKey();
                 Environment.Exit(0);
             }
 
@@ -103,6 +99,7 @@ namespace steam_shutdxwn.Source
             if (!Directory.Exists(steamPath) || steamPath is null)
             {
                 Console.WriteLine("'steamapps' folder was not found");
+                Console.ReadKey();
                 Environment.Exit(0);
             }
 
@@ -167,7 +164,12 @@ namespace steam_shutdxwn.Source
         {
             List<Game> games = new List<Game>();
             string[] files = Directory.GetFiles(steamPath, "*.acf");
-            string[] downloadState = { "4", "68", "1090", "514", "518" }; // { DownloadState.complete, DownloadState.ignore2, DownloadState.ignore, DownloadState.notScheduled }
+            string[] downloadState = { "4", "68", "1090", "514", "518" };
+            /**
+             * complete = 4
+             * ignore   = 68, 1096
+             * not scheduled = 518
+            **/
 
             if (files is null) return null;
 
