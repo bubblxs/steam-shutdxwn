@@ -1,2 +1,3 @@
-# steam-shutdxwn
-it shutdown your computer when all your steam downloads have finished.
+## steam shutdxwn
+
+Shutdown your computer once all your Steam downloads have finished.
