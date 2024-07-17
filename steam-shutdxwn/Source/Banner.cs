@@ -1,10 +1,11 @@
-﻿using System.Text;
+﻿using System.Diagnostics;
+using System.Text;
 
-namespace steam_shutdxwn.Source.Classes
+namespace steam_shutdxwn.Source
 {
     public class Banner
     {
-        private static StringBuilder _banner = new StringBuilder();
+        private static StringBuilder _banner = new();
 
         public static void Show()
         {
@@ -23,17 +24,16 @@ namespace steam_shutdxwn.Source.Classes
             {
                 try
                 {
-                    using (StreamReader reader = new StreamReader(fullPath))
+                    using StreamReader reader = new(fullPath);
+                    string? line = string.Empty;
+                    for (int i = 0, maxBannerSize = 20; (line = reader.ReadLine()) != null && i < maxBannerSize; i++)
                     {
-                        string? line = string.Empty;
-                        for (int i = 0, maxBannerSize = 20; (line = reader.ReadLine()) != null && i < maxBannerSize; i++)
-                        {
-                            _banner.AppendLine(line);
-                        }
+                        _banner.AppendLine(line);
                     }
                 }
                 catch (Exception ex)
                 {
+                    Debug.WriteLine(ex.Message);
                     _banner.Clear();
                     _banner.Append("steam shutdxwn");
                 }

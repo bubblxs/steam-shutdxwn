@@ -1,4 +1,4 @@
-﻿namespace steam_shutdxwn.Source.Classes
+﻿namespace steam_shutdxwn.Source
 {
     public class Game
     {

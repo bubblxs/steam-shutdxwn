@@ -1,7 +1,8 @@
-﻿using System.Text;
+﻿using System.Diagnostics;
+using System.Text;
 using System.Text.Json;
 
-namespace steam_shutdxwn.Source.Classes
+namespace steam_shutdxwn.Source
 {
     public class Acf
     {
@@ -21,7 +22,7 @@ namespace steam_shutdxwn.Source.Classes
         public string BytesToDownload { get; set; } = string.Empty;
         public string BytesDownloaded { get; set; } = string.Empty;
 
-        public static string? ToJson(string filePath)
+        public static Acf? Parse(string filePath)
         {
             try
             {
@@ -77,15 +78,11 @@ namespace steam_shutdxwn.Source.Classes
                     }
                 }
 
-                // this will check if the file has been parsed correctly.
-                // btw, i cant remember the reason why we dont return an ACF instead of a json.
-                JsonSerializer.Deserialize<Acf>(content.ToString());
-
-                return content.ToString();
+                return JsonSerializer.Deserialize<Acf>(content.ToString());
             }
             catch (Exception ex)
             {
-                // maybe this should return an error message or something instead of null.
+                Debug.Write(ex.Message);
                 return null;
             }
         }
