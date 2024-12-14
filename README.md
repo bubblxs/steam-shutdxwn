@@ -5,7 +5,7 @@
 ### requirements
   - .NET 6 Runtime;
   - Steam MUST be installed on your system;
-  - Windows 10 or superior.
+  - Windows 10.
 
 ### installation
 You can either build the solution or download the executable.
@@ -23,7 +23,7 @@ You can also define a custom banner for the application by creating the **shutdx
 ```
   C:\Users\%username%\Documents\shutdxwn\banner.txt
 ```
-### when working on it
+### working on it
 
 If you decide to work on it make sure to pass **--dev** as first argument.
 
