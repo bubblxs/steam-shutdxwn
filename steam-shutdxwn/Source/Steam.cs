@@ -5,16 +5,19 @@ namespace steam_shutdxwn.Source
 {
     public class Steam
     {
-        private bool _isDevEnv = false;
+        private readonly List<FileSystemWatcher> _watchlist = new();
+        private readonly List<string> _steamFoldersPath = new();
+        private readonly string _steamMainPath = string.Empty;
+        private readonly bool _isDevEnv = false;
         private bool _isShuttingDown = false;
-        private List<Game>? _downloads = new();
-        private List<string> _steamFoldersPath = new();
-        private string _steamMainPath = string.Empty;
-        private List<FileSystemWatcher> watchlist = new();
+        private List<App>? _downloads = new();
 
         public Steam(bool isDevEnv)
         {
             _isDevEnv = isDevEnv;
+            _steamMainPath = FetchSteamMainPath();
+            _steamFoldersPath = FetchAllSteamPaths();
+            _downloads = FetchDownloads(_steamFoldersPath);
         }
 
         public void Init()
@@ -24,15 +27,7 @@ namespace steam_shutdxwn.Source
             Banner.Show();
 
             if (!IsSteamRunning())
-            {
                 Quit("Steam is not running. Close the app and try again.");
-            }
-
-            _steamMainPath = FetchSteamMainPath();
-            _steamFoldersPath = FetchAllSteamPaths();
-            _downloads = FetchDownloads(_steamFoldersPath);
-
-            SetupFileWatchers();
 
             if (_downloads == null)
             {
@@ -43,11 +38,28 @@ namespace steam_shutdxwn.Source
                 {
                     RetryDownloadCheck();
                 }
-
-                if (_downloads == null)
+                else
                 {
-                    Quit("\nExiting...");
+                    Quit();
                 }
+            }
+
+            foreach (string path in _steamFoldersPath)
+            {
+                FileSystemWatcher watcher = new()
+                {
+                    Filter = "*.acf",
+                    Path = path,
+                    NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.CreationTime | NotifyFilters.Attributes | NotifyFilters.LastAccess | NotifyFilters.Size,
+                    EnableRaisingEvents = true,
+                    IncludeSubdirectories = true
+                };
+                watcher.Deleted += FilesMonitoring;
+                watcher.Renamed += FilesMonitoring;
+                watcher.Created += FilesMonitoring;
+                watcher.Changed += FilesMonitoring;
+
+                _watchlist.Add(watcher);
             }
 
             Console.Clear();
@@ -61,17 +73,11 @@ namespace steam_shutdxwn.Source
         {
             RegistryKey? registryKey = Registry.CurrentUser.OpenSubKey("Software\\Valve\\Steam\\");
 
-            if (registryKey == null)
-            {
-                Quit("Steam is not installed");
-            }
+            if (registryKey == null) Quit("Steam is not installed");
 
             string? steamPath = $"{registryKey.GetValue("SteamPath")}/steamapps/";
 
-            if (!Directory.Exists(steamPath) || steamPath == null)
-            {
-                Quit("\"steamapps\" folder was not found");
-            }
+            if (!Directory.Exists(steamPath) || steamPath == null) Quit("\"steamapps\" folder was not found");
 
             return steamPath!;
         }
@@ -94,56 +100,38 @@ namespace steam_shutdxwn.Source
                 };
 
                 foreach (string path in possiblePaths)
-                {
-                    if (Directory.Exists(path))
-                    {
-                        paths.Add(path);
-                    }
-                }
+                    if (Directory.Exists(path)) paths.Add(path);
             }
 
             string? match = paths.FirstOrDefault(stringToCheck => stringToCheck.Contains(_steamMainPath));
 
             if (match == null)
-            {
                 paths.Add(Path.GetFullPath(_steamMainPath));
-            }
 
             return paths;
         }
 
-        private List<Game>? FetchDownloads(List<string> steamPaths)
+        private static List<App>? FetchDownloads(List<string> steamPaths)
         {
-            List<Game> games = new();
+            List<App> appList = new();
 
             foreach (string path in steamPaths)
             {
-                List<Game>? game = FetchDownloads(path);
+                List<App>? app = FetchDownloads(path);
 
-                if (game != null)
-                {
-                    games.AddRange(game);
-                }
+                if (app != null) appList.AddRange(app);
             }
 
-            return games.Count > 0 ? games : null;
+            return appList.Count > 0 ? appList : null;
         }
 
-        private List<Game>? FetchDownloads(string steamPath)
+        private static List<App>? FetchDownloads(string steamPath)
         {
-            List<Game> games = new();
+            List<App> appList = new();
             string[] files = Directory.GetFiles(steamPath, "*.acf");
-            string[] downloadState = { "4", "68", "1090", "514", "518" };
-            /**
-             * complete = 4
-             * ignore   = 68, 1096
-             * not scheduled = 518
-            **/
+            string[] downloadState = { "0", "4", "68", "38", "1090", "514", "518" };
 
-            if (files == null)
-            {
-                return null;
-            }
+            if (files == null) return null;
 
             foreach (string file in files)
             {
@@ -156,12 +144,9 @@ namespace steam_shutdxwn.Source
                 }
 
                 int.TryParse(acf.StateFlags, out int stateFlag);
-                if (downloadState.Contains(acf.StateFlags) || stateFlag > 1500)
-                {
-                    continue;
-                }
+                if (downloadState.Contains(acf.StateFlags) || stateFlag > 1500) continue;
 
-                Game game = new()
+                App app = new()
                 {
                     Name = acf.name,
                     AppId = acf.appid,
@@ -169,12 +154,12 @@ namespace steam_shutdxwn.Source
                     FileName = file
                 };
 
-                games.Add(game);
+                appList.Add(app);
 
-                Console.WriteLine(game.ToString());
+                Console.WriteLine(app.ToString());
             }
 
-            return games.Count > 0 ? games : null;
+            return appList.Count > 0 ? appList : null;
         }
 
         private static bool IsSteamRunning()
@@ -212,43 +197,23 @@ namespace steam_shutdxwn.Source
         private void RetryDownloadCheck()
         {
             Console.WriteLine("\n\nPress 'ESC' to cancel.\n");
-
             do
             {
                 while (!Console.KeyAvailable)
                 {
                     _downloads = FetchDownloads(_steamFoldersPath);
 
-                    if (_downloads != null)
-                    {
-                        break;
-                    }
+                    if (_downloads != null) break;
 
                     Console.WriteLine("Downloads not found. Trying again in 2s.");
-
                     Thread.Sleep(2000);
                 }
 
-                break;
+                if (_downloads != null) break;
 
             } while (Console.ReadKey(true).Key != ConsoleKey.Escape);
-        }
 
-        private void SetupFileWatchers()
-        {
-            foreach (string path in _steamFoldersPath)
-            {
-                FileSystemWatcher watcher = new()
-                {
-                    Filter = "*.acf",
-                    Path = path,
-                    NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastAccess | NotifyFilters.LastWrite,
-                    EnableRaisingEvents = true,
-                    IncludeSubdirectories = true
-                };
-                watcher.Deleted += FilesMonitoring;
-                watchlist.Add(watcher);
-            }
+            if (_downloads == null) Quit();
         }
 
         private static void Quit(string msg = "\nPress any key to exit...")

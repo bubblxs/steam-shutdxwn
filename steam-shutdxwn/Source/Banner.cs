@@ -15,38 +15,39 @@ namespace steam_shutdxwn.Source
                 return;
             }
 
-            string bannerPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            _banner.AppendLine("                                                                                            ");
+            _banner.AppendLine("     _                             _           _      _                                     ");
+            _banner.AppendLine(" ___| |_ ___  __ _ _ __ ___    ___| |__  _   _| |_ __| | _____      ___ __                  ");
+            _banner.AppendLine("/ __| __/ _ \\/ _` | '_ ` _ \\  / __| '_ \\| | | | __/ _` |/ _ \\ \\ /\\ / / '_ \\          ");
+            _banner.AppendLine("\\__ \\ ||  __/ (_| | | | | | | \\__ \\ | | | |_| | || (_| | (_) \\ V  V /| | | |           ");
+            _banner.AppendLine("|___/\\__\\___|\\__,_|_| |_| |_| |___/_| |_|\\__,_|\\__\\__,_|\\___/ \\_/\\_/ |_| |_|       ");
+            _banner.AppendLine("                                                                                            ");
+
+            string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             string folderName = "shutdxwn";
-            string fileName = "banner.txt";
-            string fullPath = Path.Combine(bannerPath, folderName, fileName);
+            string filename = "banner.txt";
+            string fullPath = Path.Combine(documentsPath, folderName, filename);
 
             if (File.Exists(fullPath))
             {
+                StringBuilder customBaner = new();
+
                 try
                 {
                     using StreamReader reader = new(fullPath);
                     string? line = string.Empty;
                     for (int i = 0, maxBannerSize = 20; (line = reader.ReadLine()) != null && i < maxBannerSize; i++)
                     {
-                        _banner.AppendLine(line);
+                        customBaner.AppendLine(line);
                     }
                 }
                 catch (Exception ex)
                 {
+                    customBaner.Clear();
                     Debug.WriteLine(ex.Message);
-                    _banner.Clear();
-                    _banner.Append("steam shutdxwn");
                 }
-            }
-            else
-            {
-                _banner.AppendLine("                                                                                            ");
-                _banner.AppendLine("     _                             _           _      _                                     ");
-                _banner.AppendLine(" ___| |_ ___  __ _ _ __ ___    ___| |__  _   _| |_ __| | _____      ___ __                  ");
-                _banner.AppendLine("/ __| __/ _ \\/ _` | '_ ` _ \\  / __| '_ \\| | | | __/ _` |/ _ \\ \\ /\\ / / '_ \\          ");
-                _banner.AppendLine("\\__ \\ ||  __/ (_| | | | | | | \\__ \\ | | | |_| | || (_| | (_) \\ V  V /| | | |           ");
-                _banner.AppendLine("|___/\\__\\___|\\__,_|_| |_| |_| |___/_| |_|\\__,_|\\__\\__,_|\\___/ \\_/\\_/ |_| |_|       ");
-                _banner.AppendLine("                                                                                            ");
+
+                if (customBaner.Length > 0) _banner = customBaner;
             }
 
             Console.WriteLine(_banner);

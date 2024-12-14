@@ -1,6 +1,6 @@
 ﻿namespace steam_shutdxwn.Source
 {
-    public class Game
+    public class App
     {
         public string AppId { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
